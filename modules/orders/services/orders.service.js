@@ -19,50 +19,76 @@ async function insertOrder(order) {
     } = order;
 
     if (
-        !userid ||
-        !customer_name ||
-        !bill_material ||
-        !main_bill ||
-        !bill ||
-        !material ||
-        !branch_dc ||
-        !amount ||
-        !patient_name ||
-        !ip_no ||
-        !special_instructions ||
-        !ts ||
-        !order_ack
+        !userid
+        // !customer_name ||
+        // !bill_material ||
+        // !main_bill ||
+        // !bill ||
+        // !material ||
+        // !branch_dc ||
+        // !amount ||
+        // !patient_name ||
+        // !ip_no ||
+        // !special_instructions ||
+        // !ts ||
+        // !order_ack
     ) {
         return {
             error: true,
-            message: "Invalid request!",
+            message: "Invalid request! in First",
         };
     }
 
-    const orderQuery = `INSERT INTO orders
-            (userid, customer_name, bill_material, main_bill, bill, material,
-            branch_dc, amount, patient_name, ip_no, special_instructions, ts, order_ack)
-    VALUES  ('${userid}', '${customer_name}', '${bill_material}', '${main_bill}', '${bill}', '${material}',
+    const orderNoQuery = `SELECT MAX(orderNo) as val
+    FROM order_details_tbl;`;
+
+    const [orderNoRes] = await pool.query(orderNoQuery);
+
+   
+
+   
+
+    //let tempOrderNo = 1002;
+
+    let orderID = Number(orderNoRes[0].val) + 1;
+    
+    
+    const orderQuery = `INSERT INTO order_details_tbl
+            (userId, orderNo, customerName, billMaterial, mainBill, bill, material,
+                branchDc, amount, patientName, ipNo, specialInstruction, ts, order_ack)
+    VALUES  ('${userid}', '${orderID}','${customer_name}', '${bill_material}', '${main_bill}', '${bill}', '${material}',
             '${branch_dc}', '${amount}', '${patient_name}', '${ip_no}', '${special_instructions}', '${ts}', '${order_ack}')`;
 
     const [res] = await pool.query(orderQuery);
 
-    const orderID = res.insertId;
+    // const orderID = res.insertId;
+    //const orderID = 1001;
+    
 
-    if (!orderID) {
+    /*if (!orderID) {
         return {
             error: true,
-            message: "Invalid request!",
+            message: "Invalid request! in Second",
+        };
+    }*/
+
+    
+
+    if (res.affectedRows <= 0) {
+        return {
+            error: true,
+            message: "Invalid request! in Second",
         };
     }
 
     let count = 0;
 
+    
     for await (const item of items) {
         const { item_name, quantity, metal_type, cat_no } = item;
 
-        const itemsQuery = `INSERT INTO items
-                (order_id, item_name, quantity, metal_type, cat_no) 
+        const itemsQuery = `INSERT INTO order_items_details_tbl
+                (orderNo, itemsName, quantity, metalType, catNo) 
         VALUES  ('${orderID}', '${item_name}', '${quantity}', '${metal_type}', '${cat_no}')`;
 
         const [res] = await pool.query(itemsQuery);

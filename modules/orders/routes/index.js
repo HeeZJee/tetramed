@@ -6,7 +6,8 @@ router.get("/", (req, res) => {
     res.send("Hello from orders.");
 });
 
-router.post("/", async (req, res) => {
+router.post("/order", async (req, res) => {
+    console.log("**** +++ Came inside");
     const result = await insertOrder(req.body);
 
     res.json(result);
