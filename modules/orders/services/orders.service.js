@@ -119,7 +119,7 @@ async function searchItems({ search_string }) {
 }
 
 async function orderHistory({ date, userid }) {
-    let query = `SELECT * FROM orders WHERE userid = '${userid}'`;
+    let query = `SELECT * FROM order_details_tbl WHERE userId = '${userid}'`;
 
     if (date) {
         query += `AND CAST(created_time AS date) = '${date}'`;
@@ -128,11 +128,13 @@ async function orderHistory({ date, userid }) {
     const [rows] = await pool.query(query);
 
     const newRows = [];
-
+    
     for await (const row of rows) {
-        const { id } = row;
+        const id  = row.orderNo;
 
-        const itemsQuery = `SELECT * FROM items WHERE order_id = '${id}';`;
+        console.log("+++++++ ", id);
+
+        const itemsQuery = `SELECT * FROM order_items_details_tbl WHERE orderNo = '${id}';`;
 
         const [items] = await pool.query(itemsQuery);
 
